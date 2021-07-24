@@ -1,5 +1,7 @@
+from _typeshed import Self
 from typing import Tuple
 import torch
+from torch import tensor
 from torch.functional import Tensor
 import torch.nn as nn
 import numpy as np
@@ -111,7 +113,7 @@ class Encoder(nn.Module):
                 src_seq: Tensor,
                 src_pos: Tensor,
                 return_attns: bool = False) -> Tuple[Tensor]:
-                
+
         enc_slf_attn_list: Tuple[Tensor] = []
 
         # -- Prepare masks
@@ -135,5 +137,197 @@ class Encoder(nn.Module):
 
         return (enc_output, )
 
+
 class Decoder(nn.Module):
-    pass
+    """ 
+    A decoder model with self attention mechanism.
+    ---------------------
+    [Add & Norm
+    Feed-Forward]
+        ↑
+    [Add & Norm
+    Multi-Head Attention]
+        ↑
+    [Add & Norm
+    Masked Multi-Head Attention]
+    ---------------------
+        ↑
+    [Positional Encoding]
+        ↑
+    [Output Embedding]
+    """
+
+    def __init__(self,
+                 n_tgt_vocab: int,
+                 len_max_seq: int,
+                 d_word_vec: int,
+                 n_layers: int,
+                 n_head: int,
+                 d_k: int,
+                 d_v: int,
+                 d_model: int,
+                 d_inner: int,
+                 dropout: float = 0.0):
+        super().__init__()
+        n_position = len_max_seq + 1
+
+        self.tgt_word_emb = nn.Embedding(
+            n_tgt_vocab, d_word_vec, padding_idx=Constants.PAD
+        )
+
+        self.position_enc = nn.Embedding.from_pretrained(
+            get_sinusoid_encoding_table(
+                n_position, d_word_vec, padding_idx=Constants.PAD
+            ),
+            freeze=True
+        )
+
+        self.layer_stack = nn.ModuleList(
+            [
+                DecoderLayer(d_model, d_inner, n_head, d_k, d_v, dropout=dropout)
+                for _ in range(n_layers)
+            ]
+        )
+
+    def forward(self,
+                tgt_seq: Tensor,
+                tgt_pos: Tensor,
+                src_seq: Tensor,
+                enc_output: Tensor,
+                return_attns: bool = False) -> Tuple[Tensor]:
+
+        dec_slf_attn_list: Tuple[Tensor] = []
+        dec_enc_attn_list: Tuple[Tensor] = []
+
+        # -- Prepare mask
+        non_pad_mask = get_non_pad_mask(tgt_seq)
+
+        slf_attn_mask_subseq = get_subsequent_mask(tgt_seq)
+        slf_attn_mask_keypad = get_attn_key_pad_mask(seq_k=tgt_seq, seq_q=tgt_seq)
+        slf_attn_mask = (slf_attn_mask_keypad + slf_attn_mask_subseq).gt(0)
+
+        dec_enc_attn_mask = get_attn_key_pad_mask(seq_k=src_seq, seq_q=tgt_seq)
+
+        # -- Forward
+        tgt_emb: Tensor = self.tgt_word_emb(tgt_seq)
+        position_emb: Tensor = self.position_enc(tgt_pos)
+        dec_output = tgt_emb + position_emb
+
+        for dec_layer in self.layer_stack:
+            dec_output, dec_slf_attn, dec_enc_attn = dec_layer(
+                dec_output,
+                enc_output,
+                non_pad_mask,
+                slf_attn_mask,
+                dec_enc_attn_mask
+            )
+            if return_attns:
+                dec_slf_attn_list += [dec_slf_attn]
+                dec_enc_attn_list += [dec_enc_attn]
+
+        if return_attns:
+            return dec_output, dec_slf_attn_list, dec_enc_attn_list
+        return (dec_output,)
+
+
+class Transformer(nn.Module):
+    """
+    A sequence to sequence model with attention mechanism.
+                                     ___________________________
+                                    |      --------------       |   
+                                    |     | [Add & Norm] | ←--- |
+                                    |     |[Feed-Forward]|     ||
+                 ________________   |      --------------      ||
+ ______________↑____________     |  |              ↑___________||
+|       -------|------      |    |  |  ------------|---------   |     
+| ----→| [Add & Norm] |     |    |  | |     [Add & Norm]     |← |
+||     |[Feed-Forward]|     |    |  | |[Multi-Head Attention]| || 
+||      --------------      |    |  |  ----------------------  ||
+||_____________↑            |    |__|___↑___↑     ↑____________||
+|   -----------|----------  |       |  -----------|----------   |
+| →|     [Add & Norm]     | |       | |     [Add & Norm]     |← |
+|| |[Multi-Head Attention]| |       | |[Multi-Head Attention]| || 
+||  ----------------------  |       |  ----------------------  ||
+||         ↑___↑___↑        |       |         ↑___↑___↑        ||
+||_____________|            |       |             |____________||
+|______________|____________|       |_____________|_____________|
+                ↑                                 ↑
+      [Positional Encoding]             [Positional Encoding]
+                ↑                                 ↑
+        [Input Embedding]                 [Output Embedding]
+                ↑                                 ↑
+           Inputs: str                      Output: str
+    ---------------------
+"""
+
+    def __init__(self,
+                 n_src_vocab: int,
+                 n_tgt_vocab: int,
+                 len_max_seq_encoder: int,
+                 len_max_seq_decoder: int,
+                 d_word_vec: int = 512,
+                 d_model: int = 512,
+                 d_inner: int = 2048,
+                 n_layers: int = 6,
+                 n_head: int = 8,
+                 d_k: int = 64,
+                 d_v: int = 64,
+                 dropout: float = 0.0,
+                 tgt_emb_prj_weight_sharing: bool = True,
+                 emb_src_tgt_weight_sharing: bool = True,
+                 ):
+        super().__init__()
+
+        self.encoder = Encoder(
+            n_src_vocab=n_src_vocab,
+            len_max_seq=len_max_seq_encoder,
+            d_word_vec=d_word_vec,
+            d_model=d_model,
+            d_inner=d_inner,
+            n_layers=n_layers,
+            n_heads=n_head,
+            d_k=d_k,
+            d_v=d_v,
+            dropout=dropout
+        )
+
+        self.decoder = Decoder(
+            n_tgt_vocab=n_tgt_vocab,
+            len_max_seq=len_max_seq_decoder,
+            d_word_vec=d_word_vec,
+            d_model=d_model,
+            d_inner=d_inner,
+            n_layers=n_layers,
+            n_heads=n_head,
+            d_k=d_k,
+            d_v=d_v,
+            dropout=dropout
+        )
+        self.tgt_word_prj = nn.Linear(d_model, n_tgt_vocab, bias=False)
+        nn.init.xavier_normal(self.tgt_word_prj.weight)
+
+        assert (
+            d_model == d_word_vec
+        ), "To facilitate the residuals connections, the dimensions of all modules outputs shall be the same"
+        if tgt_emb_prj_weight_sharing:
+            # Share the weight matrix between target word embedding & the final logit dense layer
+            self.tgt_word_prj.weight = self.decoder.tgt_word_emb.weight
+            self.x_logit_scale = d_model ** -0.5
+        else:
+            self.x_logit_scale = 1.0
+
+        if emb_src_tgt_weight_sharing:
+            # Share the weight matrix between source & target word embeddings
+            assert(
+                n_src_vocab == n_tgt_vocab
+            ), "To share embedding table, the vocabulary size of  src/tgt shall be the same"
+            self.encoder.src_word_emb.weight = self.decoder.tgt_word_emb.weight
+
+    def forward(self, src_seq: Tensor, src_pos: Tensor, tgt_seq: Tensor, tgt_pos: Tensor) -> Tensor:
+        tgt_seq, tgt_pos = tgt_seq[:, :, -1], tgt_pos[:, :, -1]
+
+        enc_output, *_ = self.encoder(src_seq, src_pos)
+        dec_output, *_ = self.decoder(tgt_seq, tgt_pos, src_seq, enc_output)
+        seq_logit: Tensor = self.tgt_word_prj(dec_output) * self.x_logit_scale
+
+        return seq_logit.view(-1, seq_logit.size(2))
