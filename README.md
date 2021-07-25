@@ -15,8 +15,10 @@ El objetivo principal es comprobar la capacidad que tienen los modelos basados e
 
 Los transformers son una de las arquitecturas de aprendizaje automático con mayor número de aplicaciones. En este trabajo buscamos comprobar la capacidad que tiene este tipo de modelos para poder realizar tareas que impliquen un cierto razonamiento matemático. Para ello implementamos 2 modelos, uno de ellos se encargará de resolver ecuaciones lineales de una variable y el segundo intenta resolver adiciones y sustracciones que le son expresadas en lenguaje natural sin mucho éxito.
 
+## El código para el informe es obtenido del siguiente repositorio de GitHub
+https://github.com/andrewschreiber/hs-math-nlp
 ## Dataset
-El dataset completo de problemas matematicos tiene un peso de 2gb comprimido (7gb al descomprimir) auqnue se utilizo una peuqeña parte del mismo.
+El dataset completo de problemas matematicos tiene un peso de 2gb comprimido (7gb al descomprimir) auqnue se utilizo una pequeña parte del mismo.
 
 https://console.cloud.google.com/storage/browser/_details/mathematics-dataset/mathematics_dataset-v1.0.tar.gz
 
