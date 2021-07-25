@@ -18,7 +18,7 @@ Los transformers son una de las arquitecturas de aprendizaje automático con may
 ## El código para el informe es obtenido del siguiente repositorio de GitHub
 https://github.com/andrewschreiber/hs-math-nlp
 ## Dataset
-El dataset completo de problemas matematicos tiene un peso de 2gb comprimido (7gb al descomprimir) auqnue se utilizo una peuqeña parte del mismo.
+El dataset completo de problemas matematicos tiene un peso de 2gb comprimido (7gb al descomprimir) auqnue se utilizo una pequeña parte del mismo.
 
 https://console.cloud.google.com/storage/browser/_details/mathematics-dataset/mathematics_dataset-v1.0.tar.gz
 
