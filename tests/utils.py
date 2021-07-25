@@ -11,8 +11,8 @@ from math_dataset import (
     question_answer_to_position_batch_collate_fn,
 )
 from transformer.Models import Transformer
-from LSTM.simple import SimpleLSTM
-from training import TRANSFORMER, SIMPLE_LSTM, ATTENTIONAL_LSTM
+#from LSTM.simple import SimpleLSTM
+from training import TRANSFORMER #,SIMPLE_LSTM, ATTENTIONAL_LSTM
 
 
 def one_hot_seq(chars, vocab_size=VOCAB_SZ, char0=ord(" ")):
@@ -71,8 +71,8 @@ def build_transformer(
     )
 
 
-def build_simple_lstm():
-    return SimpleLSTM(VOCAB_SZ, MAX_ANSWER_SZ, MAX_QUESTION_SZ)
+#def build_simple_lstm():
+#    return SimpleLSTM(VOCAB_SZ, MAX_ANSWER_SZ, MAX_QUESTION_SZ)
 
 
 def build_att_lstm():
