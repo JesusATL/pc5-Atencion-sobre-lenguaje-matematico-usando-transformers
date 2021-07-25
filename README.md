@@ -14,6 +14,17 @@ El objetivo principal es comprobar la capacidad que tienen los modelos basados e
 
 Los transformers son una de las arquitecturas de aprendizaje automático con mayor número de aplicaciones. En este trabajo buscamos comprobar la capacidad que tiene este tipo de modelos para poder realizar tareas que impliquen un cierto razonamiento matemático. Para ello implementamos 2 modelos, uno de ellos se encargará de resolver ecuaciones lineales de una variable y el segundo intenta resolver adiciones y sustracciones que le son expresadas en lenguaje natural sin mucho éxito.
 
+## Dataset
+El dataset completo de problemas matematicos tiene un peso de 2gb comprimido (7gb al descomprimir) auqnue se utilizo una peuqeña parte del mismo.
+
+https://console.cloud.google.com/storage/browser/_details/mathematics-dataset/mathematics_dataset-v1.0.tar.gz
+
+## Modelos
+Los modelos entrenados pesan 500mb cada uno por lo que no es posible subirlos al repositorio, los archivos fueron subidos al los siguientes enlaces.
+
+Modelo 1 : https://drive.google.com/file/d/10iRGBjshW6euJqtFDeCZFZz9yMW1XfXK/view?usp=sharing
+
+Modelo 2 : https://drive.google.com/file/d/1T9yJnPX2--ike_bxtPdyyOFj87G5-eXo/view?usp=sharing
 
 ## Resultados
 ### Predicciones realizadas por el modelo entrenado sobre algebra__linear_1d.txt (EASY)
