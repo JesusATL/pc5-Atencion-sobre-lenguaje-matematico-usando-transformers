@@ -28,7 +28,7 @@ Modelo 1 : https://drive.google.com/file/d/10iRGBjshW6euJqtFDeCZFZz9yMW1XfXK/vie
 Modelo 2 : https://drive.google.com/file/d/1T9yJnPX2--ike_bxtPdyyOFj87G5-eXo/view?usp=sharing
 
 ### NOTA:
-El cuaderno de entrenamiento "CuadernoDeEntrenamiento.ipynb" asi como los cuadernos de prueba "pruebasPrimerModelo.ipynb" y "pruebasSegundoModelo.ipynb" fueron ejecutados localmente en una computadora con gpu luego de un largo proceso de configuracion. 
+El cuaderno de entrenamiento "Cuaderno de entrenamiento 1.ipynb" y "Cuaderno de entrenamiento 2.ipynb" asi como los cuadernos de prueba "pruebasPrimerModelo.ipynb" y "pruebasSegundoModelo.ipynb" fueron ejecutados localmente en una computadora con gpu luego de un largo proceso de configuracion. 
 
 
 ## Resultados
