@@ -20,4 +20,4 @@ Los transformers son una de las arquitecturas de aprendizaje automático con may
 <img src="imagenes/resultados_m1.png" align="center" />
 
 ### Predicciones realizadas por el modelo entrenado sobre algebra__linear_1d.txt (HARD)
-<img src="arithmetic__add_or_sub" align="center" />
+<img src="imagenes/resultados_m2.png" align="center" />
